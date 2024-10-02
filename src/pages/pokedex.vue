@@ -1,7 +1,7 @@
 <template>
-  <NavBar />
+    <NavBar />
 
-  <Home />
+    <h1>pokedex</h1>
 </template>
 
 <script lang="ts" setup>

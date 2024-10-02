@@ -1,7 +1,7 @@
 <template>
-  <NavBar />
+    <NavBar />
 
-  <Home />
+    <h1>Favoritos</h1>
 </template>
 
 <script lang="ts" setup>
