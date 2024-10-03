@@ -11,11 +11,12 @@
                         <div :class="['ma-2']">
                             <v-card :class="['mx-auto', 'card', 'pa-2', 'ma-2', 'rounded-xl', 'bg-grey-lighten-2']"
                                 variant="elevated">
-                                <h1>
-                                    {{ pokemon.name }}
-                                </h1>
+                                <v-img src=''></v-img>
+                                <span>
+                                    ID: {{ pokemon.id }}
+                                    Nome: {{ pokemon.name }}
+                                </span>
                                 <v-card-subtitle>
-                                    kanto
                                 </v-card-subtitle>
                                 <v-card-text>
                                 </v-card-text>
@@ -38,7 +39,6 @@ const pokeListNext = ref('https://pokeapi.co/api/v2/pokemon?offset=0&limit=5')
 
 
 async function api() {
-
     return new Promise(resolve => {
         setTimeout(() => {
             resolve(fetch(pokeListNext.value).then(response => response.json()))
@@ -47,16 +47,27 @@ async function api() {
 }
 
 async function pokeInfo(url: string) {
-    const response = await fetch(url).then(response => response.json)
-    const { id, sprites } = response.data;
-    return id, sprites
+    const response = await fetch(url).then(response => response.json())
+    const { id, sprites } = response;
+    return response
 }
-
 
 async function load({ done }) {
     const res = await api()
+    const { results } = res
+
+    const pokePayload = await Promise.all(results.map(async pokemon => {
+        const { id, sprites } = await pokeInfo(pokemon.url)
+        return {
+            name: pokemon.name,
+            id,
+            sprites: sprites.other.dream_world.front_default,
+        }
+    }))
+    console.log(pokePayload)
+
     pokeListNext.value = res.next
-    pokeList.value.push(...res.results)
+    pokeList.value.push(...pokePayload)
     done('ok')
 
 }
