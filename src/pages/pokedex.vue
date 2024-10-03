@@ -22,7 +22,7 @@
                                     </v-card-subtitle>
                                     <h1> {{ pokemon.name }}</h1>
                                     <v-card-text class="btn-info">
-                                        <v-btn class="btn-info-pokemon" color="primary"> More Info </v-btn>
+                                        <v-btn class="btn-info-pokemon" color="primary" @click="selectPokemon(pokemon)"> More Info </v-btn>
                                     </v-card-text>
                                 </v-card>
                             </div>
@@ -30,17 +30,11 @@
                     </v-infinite-scroll>
                 </v-card-text>
                 <v-card-text class="pokeinfo">
-                    <v-card
-                        class="mx-auto card pokemon-cards ma-2 rounded-xl bg-grey-lighten-2 d-flex align-center ga-9">
-                        <v-img max-width="150px"></v-img>
-                        <v-card-subtitle>
-                            ID: 
-                        </v-card-subtitle>
-                        <h1> </h1>
-                        <v-card-text class="btn-info">
-                            
-                        </v-card-text>
-                    </v-card>
+                    <PokemonInfo 
+                    :name="selectedPokemon?.name"
+                    :id="selectedPokemon?.id"
+                    :img="selectedPokemon?.sprites.other.dream_world.front_default"
+                    />
                 </v-card-text>
             </span>
         </v-card>
@@ -50,11 +44,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 
 const pokeList = ref([])
 const pokeCount = ref('')
 const pokeListNext = ref('https://pokeapi.co/api/v2/pokemon?offset=0&limit=5')
+const selectedPokemon = reactive(ref())
 
 
 async function api() {
@@ -81,11 +76,13 @@ async function load({ done }) {
             name: pokemon.name,
             id,
             sprites: sprites.other.dream_world.front_default,
+            url: pokemon.url
         }
     }))
     pokeCount.value = res.count
     pokeListNext.value = res.next
     pokeList.value.push(...pokePayload)
+    console.log(pokePayload)
     done('ok')
 
 }
@@ -94,7 +91,14 @@ async function load({ done }) {
 //         .then(response => response.json())
 //     pokeList.value = pokeData.results
 //     pokeListNext.value = pokeData.next
-// })
+// }).value
+
+const selectPokemon = async (pokemon) => {
+    await fetch(pokemon.url)
+    .then(res => res.json())
+    .then(res => selectedPokemon.value = res);
+    console.log(selectedPokemon.value);
+}
 </script>
 
 <style>
@@ -123,9 +127,11 @@ async function load({ done }) {
 .pokeinfo {
     flex-grow: 0.4;
 }
-.span-poke{
+
+.span-poke {
     height: 47rem;
 }
+
 .pokemon-cards {
     @media (max-width: 599px) {
         padding: 2rem;
