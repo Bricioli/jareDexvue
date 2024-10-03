@@ -3,28 +3,36 @@
     <v-container class="d-flex align-center justify-center bg" height="80%">
         <v-card class="mx-auto card rounded-xl" variant="bordered" color="transparent">
             <h1>
-                Todos Pokemons {{ pokeList.count }}
+                Pokemons
             </h1>
-            <v-card-text>
-                <v-infinite-scroll :pokeList="pokeList" :onLoad="load">
-                    <template v-for="(pokemon, index) in pokeList" :key="pokemon">
-                        <div :class="['ma-2']">
-                            <v-card :class="['mx-auto', 'card', 'pa-2', 'ma-2', 'rounded-xl', 'bg-grey-lighten-2']"
-                                variant="elevated">
-                                <v-img src=''></v-img>
-                                <span>
-                                    ID: {{ pokemon.id }}
-                                    Nome: {{ pokemon.name }}
-                                </span>
-                                <v-card-subtitle>
-                                </v-card-subtitle>
-                                <v-card-text>
-                                </v-card-text>
-                            </v-card>
-                        </div>
-                    </template>
-                </v-infinite-scroll>
-            </v-card-text>
+            <v-card-subtitle class="sub">
+                Total de pokemons : {{ pokeCount }}
+            </v-card-subtitle>
+            <span class="d-flex flex-wrap">
+                <v-card-text class="pokemons">
+                    <v-infinite-scroll :pokeList="pokeList" :onLoad="load">
+                        <template v-for="(pokemon, index) in pokeList" :key="pokemon">
+                            <div :class="['ma-2']">
+                                <v-card
+                                    :class="['mx-auto', 'card', 'pokemon-cards', 'ma-2', 'rounded-xl', 'bg-grey-lighten-2', 'd-flex', 'align-center', 'ga-9']"
+                                    variant="elevated">
+                                    <v-img v-bind:src='pokemon.sprites' max-width="150px"></v-img>
+                                    <v-card-subtitle>
+                                        ID: {{ pokemon.id }}
+                                    </v-card-subtitle>
+                                    <h1> {{ pokemon.name }}</h1>
+                                    <v-card-text class="btn-info">
+                                        <v-btn class="btn-info-pokemon" color="primary"> More Info </v-btn>
+                                    </v-card-text>
+                                </v-card>
+                            </div>
+                        </template>
+                    </v-infinite-scroll>
+                </v-card-text>
+                <v-card-text class="pokeinfo">
+
+                </v-card-text>
+            </span>
         </v-card>
     </v-container>
 
@@ -35,6 +43,7 @@
 import { ref, onMounted } from 'vue'
 
 const pokeList = ref([])
+const pokeCount = ref('')
 const pokeListNext = ref('https://pokeapi.co/api/v2/pokemon?offset=0&limit=5')
 
 
@@ -64,8 +73,7 @@ async function load({ done }) {
             sprites: sprites.other.dream_world.front_default,
         }
     }))
-    console.log(pokePayload)
-
+    pokeCount.value = res.count
     pokeListNext.value = res.next
     pokeList.value.push(...pokePayload)
     done('ok')
@@ -87,12 +95,44 @@ async function load({ done }) {
         color: #1867c0;
     }
 
+    .sub {
+        color: rgb(128, 128, 128);
+        text-align: center;
+    }
+
     width: 100%;
     height: 100%;
     margin-top: -2rem;
 
     .v-infinite-scroll--vertical {
         height: 36rem !important;
+    }
+}
+
+.pokemons {
+    flex-grow: 0.7;
+}
+
+.pokeinfo {
+    flex-grow: 0.3;
+}
+
+.pokemon-cards {
+    @media (max-width: 599px) {
+        padding: 2rem;
+
+        img {}
+    }
+
+    @media (min-width: 600px) {
+        padding: 3rem;
+    }
+    .btn-info{
+        display: grid;
+
+        .btn-info-pokemon{
+            justify-self: end;
+        }
     }
 }
 </style>
