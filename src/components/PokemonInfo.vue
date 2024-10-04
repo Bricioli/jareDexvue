@@ -56,7 +56,6 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive } from 'vue'
 const pokemon = defineProps(['name', 'id', 'img', 'hp', 'attack', 'defense', 'sAttack', 'sDefense', 'speed'
 ])
 console.log(pokemon.hp)

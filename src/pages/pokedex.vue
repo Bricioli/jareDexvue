@@ -19,12 +19,11 @@
                         :defense="selectedPokemon?.stats[2].base_stat" 
                         :sAttack="selectedPokemon?.stats[3].base_stat"
                         :sDefense="selectedPokemon?.stats[4].base_stat" 
-                        :speed="selectedPokemon?.stats[5].base_stat" 
-                        />
+                        :speed="selectedPokemon?.stats[5].base_stat" />
                 </v-card-text>
                 <v-card-text class="pokemons">
                     <v-infinite-scroll :pokeList="pokeList" :onLoad="load">
-                        <template v-for="(pokemon, index) in pokeList" :key="pokemon">
+                        <template v-for="pokemon in pokeList" :key="pokemon.id">
                             <div :class="['ma-2']">
                                 <v-card
                                     :class="['mx-auto', 'card', 'pokemon-cards', 'ma-2', 'rounded-xl', 'bg-grey-lighten-2', 'd-flex', 'align-center', 'ga-9']"
@@ -52,13 +51,26 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive } from 'vue'
 
-const pokeList = ref([])
-const pokeCount = ref('')
-const pokeListNext = ref('https://pokeapi.co/api/v2/pokemon?offset=0&limit=5')
-const selectedPokemon = reactive(ref())
-const selectedPokemonEvoltion = reactive(ref())
+interface Pokemon {
+    id: number;
+    name: string;
+    sprites: string;
+    url: string;
+}
+
+
+interface ApiResponse {
+  count: string;
+  next: string;
+  results: Pokemon[];
+}
+
+const pokeList: Ref<Pokemon[]> = ref([]);
+const pokeCount = ref('');
+const pokeListNext = ref('https://pokeapi.co/api/v2/pokemon?offset=0&limit=5');
+const selectedPokemon = reactive(ref());
 
 
 async function api() {
@@ -71,15 +83,15 @@ async function api() {
 
 async function pokeInfo(url: string) {
     const response = await fetch(url).then(response => response.json())
-    const { id, sprites } = response;
+    //    const { id, sprites } = response;
     return response
 }
 
 async function load({ done }) {
-    const res = await api()
-    const { results } = res
+    const res = await api() as ApiResponse
+    const { results } = res as ApiResponse;
 
-    const pokePayload = await Promise.all(results.map(async pokemon => {
+    const pokePayload = await Promise.all(results.map(async (pokemon : Pokemon) => {
         const { id, sprites } = await pokeInfo(pokemon.url)
         return {
             name: pokemon.name,
@@ -88,10 +100,9 @@ async function load({ done }) {
             url: pokemon.url
         }
     }))
-    pokeCount.value = res.count
+    pokeCount.value = res.count 
     pokeListNext.value = res.next
     pokeList.value.push(...pokePayload)
-    console.log(pokePayload)
     done('ok')
 
 }
@@ -102,16 +113,16 @@ async function load({ done }) {
 //     pokeListNext.value = pokeData.next
 // }).value
 
-const selectPokemon = async (pokemon) => {
+const selectPokemon = async (pokemon : Pokemon) => {
     await fetch(pokemon.url)
         .then(res => res.json())
         .then(res => selectedPokemon.value = res);
-
-    const pokeSpecies = await fetch('https://pokeapi.co/api/v2/pokemon-species/' + pokemon.name)  
-    .then(res => res.json())
-    await fetch(pokeSpecies.evolution_chain) 
-        .then(res => res.json())
-        .then(res => selectedPokemonEvoltion.value = res);
+    console.log(selectedPokemon.value);
+    // const pokeSpecies = await fetch('https://pokeapi.co/api/v2/pokemon-species/' + pokemon.name)
+    //     .then(res => res.json())
+    // await fetch(pokeSpecies.evolution_chain)
+    //     .then(res => res.json())
+    //     .then(res => selectedPokemonEvoltion.value = res);
 }
 </script>
 
