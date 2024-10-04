@@ -50,24 +50,11 @@
 
 </template>
 
-<script lang="ts" setup>
+<script setup>
 import { ref, reactive } from 'vue'
 
-interface Pokemon {
-    id: number;
-    name: string;
-    sprites: string;
-    url: string;
-}
 
-
-interface ApiResponse {
-  count: string;
-  next: string;
-  results: Pokemon[];
-}
-
-const pokeList: Ref<Pokemon[]> = ref([]);
+const pokeList = ref([]);
 const pokeCount = ref('');
 const pokeListNext = ref('https://pokeapi.co/api/v2/pokemon?offset=0&limit=5');
 const selectedPokemon = reactive(ref());
@@ -81,17 +68,17 @@ async function api() {
     })
 }
 
-async function pokeInfo(url: string) {
+async function pokeInfo(url) {
     const response = await fetch(url).then(response => response.json())
     //    const { id, sprites } = response;
     return response
 }
 
 async function load({ done }) {
-    const res = await api() as ApiResponse
-    const { results } = res as ApiResponse;
+    const res = await api()
+    const { results } = res;
 
-    const pokePayload = await Promise.all(results.map(async (pokemon : Pokemon) => {
+    const pokePayload = await Promise.all(results.map(async pokemon => {
         const { id, sprites } = await pokeInfo(pokemon.url)
         return {
             name: pokemon.name,
@@ -113,7 +100,7 @@ async function load({ done }) {
 //     pokeListNext.value = pokeData.next
 // }).value
 
-const selectPokemon = async (pokemon : Pokemon) => {
+const selectPokemon = async (pokemon) => {
     await fetch(pokemon.url)
         .then(res => res.json())
         .then(res => selectedPokemon.value = res);
