@@ -9,6 +9,19 @@
                 Total de pokemons : {{ pokeCount }}
             </v-card-subtitle>
             <span class="d-flex flex-wrap span-poke">
+                <v-card-text class="pokeinfo">
+                    <PokemonInfo 
+                        :name="selectedPokemon?.name" 
+                        :id="selectedPokemon?.id"
+                        :img="selectedPokemon?.sprites.other.dream_world.front_default"
+                        :hp="selectedPokemon?.stats[0].base_stat" 
+                        :attack="selectedPokemon?.stats[1].base_stat"
+                        :defense="selectedPokemon?.stats[2].base_stat" 
+                        :sAttack="selectedPokemon?.stats[3].base_stat"
+                        :sDefense="selectedPokemon?.stats[4].base_stat" 
+                        :speed="selectedPokemon?.stats[5].base_stat" 
+                        />
+                </v-card-text>
                 <v-card-text class="pokemons">
                     <v-infinite-scroll :pokeList="pokeList" :onLoad="load">
                         <template v-for="(pokemon, index) in pokeList" :key="pokemon">
@@ -18,24 +31,19 @@
                                     variant="elevated">
                                     <v-img v-bind:src='pokemon.sprites' max-width="150px"></v-img>
                                     <v-card-subtitle>
-                                        ID: {{ pokemon.id }}
+                                        #{{ pokemon.id }}
                                     </v-card-subtitle>
                                     <h1> {{ pokemon.name }}</h1>
                                     <v-card-text class="btn-info">
-                                        <v-btn class="btn-info-pokemon" color="primary" @click="selectPokemon(pokemon)"> More Info </v-btn>
+                                        <v-btn class="btn-info-pokemon" color="primary" @click="selectPokemon(pokemon)">
+                                            More Info </v-btn>
                                     </v-card-text>
                                 </v-card>
                             </div>
                         </template>
                     </v-infinite-scroll>
                 </v-card-text>
-                <v-card-text class="pokeinfo">
-                    <PokemonInfo 
-                    :name="selectedPokemon?.name"
-                    :id="selectedPokemon?.id"
-                    :img="selectedPokemon?.sprites.other.dream_world.front_default"
-                    />
-                </v-card-text>
+
             </span>
         </v-card>
     </v-container>
@@ -50,6 +58,7 @@ const pokeList = ref([])
 const pokeCount = ref('')
 const pokeListNext = ref('https://pokeapi.co/api/v2/pokemon?offset=0&limit=5')
 const selectedPokemon = reactive(ref())
+const selectedPokemonEvoltion = reactive(ref())
 
 
 async function api() {
@@ -95,9 +104,14 @@ async function load({ done }) {
 
 const selectPokemon = async (pokemon) => {
     await fetch(pokemon.url)
+        .then(res => res.json())
+        .then(res => selectedPokemon.value = res);
+
+    const pokeSpecies = await fetch('https://pokeapi.co/api/v2/pokemon-species/' + pokemon.name)  
     .then(res => res.json())
-    .then(res => selectedPokemon.value = res);
-    console.log(selectedPokemon.value);
+    await fetch(pokeSpecies.evolution_chain) 
+        .then(res => res.json())
+        .then(res => selectedPokemonEvoltion.value = res);
 }
 </script>
 
@@ -121,11 +135,12 @@ const selectPokemon = async (pokemon) => {
 }
 
 .pokemons {
-    flex-grow: 0.6;
+    flex-grow: 100;
 }
 
 .pokeinfo {
-    flex-grow: 0.4;
+    max-width: 500px;
+    min-width: 500px;
 }
 
 .span-poke {
